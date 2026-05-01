@@ -197,8 +197,16 @@ def build_sidebar():
         value=st.secrets.get("worksheet_name", "Página1"))
     st.sidebar.divider()
     st.sidebar.subheader("💰 Orçamento (USD)")
+    # Lê valor da URL (?budget=...) ou cai pro secrets, ou default 1000
+    try:
+        default_budget = float(st.query_params.get("budget", st.secrets.get("budget_total", 1000.0)))
+    except (ValueError, TypeError):
+        default_budget = float(st.secrets.get("budget_total", 1000.0))
     budget_total = st.sidebar.number_input("Total mensal", min_value=0.0,
-        value=float(st.secrets.get("budget_total", 1000.0)), step=50.0)
+        value=default_budget, step=50.0, key="budget_total_input")
+    # Salva na URL para persistir entre reloads
+    if str(budget_total) != st.query_params.get("budget", ""):
+        st.query_params["budget"] = str(budget_total)
     with st.sidebar.expander("🏷️ Por categoria"):
         default_by_cat = dict(st.secrets.get("budget_by_category", {}))
         cat_budgets = {}
